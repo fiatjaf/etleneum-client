@@ -15,12 +15,5 @@ export default {
       format: 'cjs'
     }
   ],
-  plugins: [
-    resolve(),
-    commonjs({
-      namedExports: {
-        'toastify-js': ['Toastify']
-      }
-    })
-  ]
+  plugins: [resolve(), commonjs()]
 }
