@@ -1,9 +1,75 @@
 /** @format */
 
-import get from 'just-safe-get'
+const fetch = window.fetch
+const EventSource = window.EventSource
 
-export async function loadContract() {
-  let r = await fetch(`${window.etleneum}/~/contract/${window.contract}/state`)
+const ETLENEUM = window.etleneum || 'https://etleneum.com'
+
+export function Contract(contractId) {
+  async function get(field = null) {
+    let append = field ? `/${field}` : ''
+    let r = await fetch(`${ETLENEUM}/~/contract/${contractId}${append}`)
+    if (!r.ok) {
+      throw new Error((await r.json()).error)
+    }
+    return (await r.json()).value
+  }
+
+  return {
+    get,
+    state: () => get('state'),
+    funds: () => get('funds'),
+    calls: () => get('calls'),
+    events: () => get('events'),
+
+    stream(onCall = () => {}, onError = () => {}) {
+      const es = new EventSource(`${ETLENEUM}/~~~/contract/${contractId}`)
+
+      if (onCall)
+        es.addEventListener('call-made', e => {
+          let data = JSON.parse(e.data)
+          onCall(data.id)
+        })
+
+      if (onError)
+        es.addEventListener('call-error', e => {
+          let data = JSON.parse(e.data)
+          if (data.kind === 'internal') {
+            onError(data.id, `internal error, please notify: ${data.message}`)
+          } else if (data.kind === 'runtime') {
+            onError(data.id, `raised error: <pre>${data.message}</pre>`)
+          }
+        })
+
+      return () => {
+        es.close()
+      }
+    },
+
+    async prepareCall(method, msatoshi = 0, payload = {}, session = '') {
+      let r = await fetch(
+        `${ETLENEUM}/~/contract/${contractId}/call?session=${session}`,
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            msatoshi,
+            method,
+            payload
+          })
+        }
+      )
+
+      if (!r.ok) {
+        throw new Error((await r.json()).error)
+      }
+
+      return (await r.json()).value
+    }
+  }
+}
+
+export async function loadCall(callid) {
+  let r = await fetch(`${ETLENEUM}/~/call/${callid}`)
 
   if (!r.ok) {
     throw new Error((await r.json()).error)
@@ -12,55 +78,15 @@ export async function loadContract() {
   return (await r.json()).value
 }
 
-export async function makeCall(
-  method,
-  satoshis,
-  payload,
-  {showInvoice, invoiceAt, showPasteInvoice}
-) {
-  if (invoiceAt) {
-    let invoice = await new Promise(resolve => {
-      showPasteInvoice({
-        onPasted: pasted => {
-          showPasteInvoice(null)
-          resolve(pasted)
-        },
-        hide: () => showPasteInvoice(null)
-      })
-    })
-    payload[invoiceAt] = invoice
-  }
-
-  let r = await fetch(`${window.etleneum}/~/contract/${window.contract}/call`, {
-    method: 'POST',
-    body: JSON.stringify({
-      satoshis,
-      method,
-      payload
-    })
+export async function patchCall(callid, payload) {
+  let r = await fetch(`${ETLENEUM}/~/call/${callid}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload)
   })
 
   if (!r.ok) {
     throw new Error((await r.json()).error)
   }
 
-  let {id: callid, invoice} = (await r.json()).value
-
-  return new Promise(resolve => {
-    showInvoice({
-      invoice,
-      onPaid: async () => {
-        let r = await fetch(`${window.etleneum}/~/call/${callid}`, {
-          method: 'POST'
-        })
-        if (!r.ok) {
-          throw new Error((await r.json()).error)
-        }
-
-        showInvoice(null)
-        resolve((await r.json()).value)
-      },
-      hide: () => showInvoice(null)
-    })
-  })
+  return (await r.json()).value
 }

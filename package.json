@@ -1,6 +1,6 @@
 {
-  "name": "etleneum-client",
-  "version": "0.1.0",
+  "name": "etleneum",
+  "version": "0.2.0",
   "description": "Easily call etleneum.com contracts.",
   "main": "etleneum.cjs.js",
   "module": "etleneum.esm.js",
@@ -13,19 +13,17 @@
     "lightning-network",
     "ln",
     "ethereum",
-    "the-centralization"
+    "the-centralization",
+    "smart contract"
   ],
   "author": "fiatjaf",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/fiatjaf/etleneum-client/issues"
-  },
-  "homepage": "https://github.com/fiatjaf/etleneum-client#readme",
-  "dependencies": {
-    "just-safe-get": "^1.3.0"
-  },
   "devDependencies": {
     "rollup-plugin-commonjs": "^9.2.2",
     "rollup-plugin-node-resolve": "^4.0.1"
+  },
+  "dependencies": {
+    "promise-window": "^1.2.1",
+    "svelte-kjua": "^1.0.0"
   }
 }
