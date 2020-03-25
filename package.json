@@ -1,6 +1,6 @@
 {
   "name": "etleneum",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Easily call etleneum.com contracts.",
   "main": "etleneum.cjs.js",
   "module": "etleneum.esm.js",

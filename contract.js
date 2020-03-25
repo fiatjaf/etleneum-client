@@ -7,8 +7,20 @@ const ETLENEUM = window.etleneum || 'https://etleneum.com'
 
 export function Contract(contractId) {
   async function get(field = null) {
-    let append = field ? `/${field}` : ''
-    let r = await fetch(`${ETLENEUM}/~/contract/${contractId}${append}`)
+    let r = await fetch(
+      `${ETLENEUM}/~/contract/${contractId}${field ? `/${field}` : ''}`
+    )
+    if (!r.ok) {
+      throw new Error((await r.json()).error)
+    }
+    return (await r.json()).value
+  }
+
+  async function post(field = null, body = '') {
+    let r = await fetch(
+      `${ETLENEUM}/~/contract/${contractId}${field ? `/${field}` : ''}`,
+      {method: 'POST', body}
+    )
     if (!r.ok) {
       throw new Error((await r.json()).error)
     }
@@ -17,7 +29,8 @@ export function Contract(contractId) {
 
   return {
     get,
-    state: () => get('state'),
+    state: (jqfilter = null) =>
+      jqfilter ? post('state', jqfilter) : get('state'),
     funds: () => get('funds'),
     calls: () => get('calls'),
     events: () => get('events'),
