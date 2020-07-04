@@ -1,17 +1,17 @@
 /** @format */
 
-import resolve from 'rollup-plugin-node-resolve'
-import commonjs from 'rollup-plugin-commonjs'
+import resolve from '@rollup/plugin-node-resolve'
+import commonjs from '@rollup/plugin-commonjs'
 
 export default {
-  input: 'contract.js',
+  input: 'index.js',
   output: [
     {
-      file: 'etleneum.esm.js',
+      file: 'lib/etleneum.esm.js',
       format: 'esm'
     },
     {
-      file: 'etleneum.cjs.js',
+      file: 'lib/etleneum.cjs.js',
       format: 'cjs'
     }
   ],

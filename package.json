@@ -2,8 +2,8 @@
   "name": "etleneum",
   "version": "0.2.1",
   "description": "Easily call etleneum.com contracts.",
-  "main": "etleneum.cjs.js",
-  "module": "etleneum.esm.js",
+  "main": "lib/etleneum.cjs.js",
+  "module": "lib/etleneum.esm.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/fiatjaf/etleneum-client.git"
@@ -19,11 +19,8 @@
   "author": "fiatjaf",
   "license": "ISC",
   "devDependencies": {
-    "rollup-plugin-commonjs": "^9.2.2",
-    "rollup-plugin-node-resolve": "^4.0.1"
-  },
-  "dependencies": {
-    "promise-window": "^1.2.1",
-    "svelte-kjua": "^1.0.0"
+    "@rollup/plugin-commonjs": "^11.1.0",
+    "@rollup/plugin-node-resolve": "^7.1.3",
+    "rollup": "^2.18.2"
   }
 }
