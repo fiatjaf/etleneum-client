@@ -32,8 +32,8 @@ export function Contract(contractId) {
     state: (jqfilter = null) =>
       jqfilter ? post('state', jqfilter) : get('state'),
     funds: () => get('funds'),
-    calls: () => get('calls'),
-    events: () => get('events'),
+    calls: (qs = null) =>
+      qs ? get(`calls?{(new URLSearchParams(qs)).toString()}`) : get('calls'),
 
     stream(onCall = () => {}, onError = () => {}) {
       const es = new EventSource(`${ETLENEUM}/~~~/contract/${contractId}`)
@@ -50,7 +50,7 @@ export function Contract(contractId) {
           if (data.kind === 'internal') {
             onError(data.id, `internal error, please notify: ${data.message}`)
           } else if (data.kind === 'runtime') {
-            onError(data.id, `raised error: <pre>${data.message}</pre>`)
+            onError(data.id, `runtime error: <pre>${data.message}</pre>`)
           }
         })
 
