@@ -1,105 +1,104 @@
 /** @format */
 
-const fetch = window.fetch
-const EventSource = window.EventSource
+const fetch = window.fetch;
+const EventSource = window.EventSource;
 
-const ETLENEUM = window.etleneum || 'https://etleneum.com'
+const ETLENEUM = window.etleneum || "https://etleneum.com";
 
 export function Contract(contractId) {
   async function get(field = null) {
     let r = await fetch(
-      `${ETLENEUM}/~/contract/${contractId}${field ? `/${field}` : ''}`
-    )
+      `${ETLENEUM}/~/contract/${contractId}${field ? `/${field}` : ""}`
+    );
     if (!r.ok) {
-      throw new Error((await r.json()).error)
+      throw new Error((await r.json()).error);
     }
-    return (await r.json()).value
+    return (await r.json()).value;
   }
 
-  async function post(field = null, body = '') {
+  async function post(field = null, body = "") {
     let r = await fetch(
-      `${ETLENEUM}/~/contract/${contractId}${field ? `/${field}` : ''}`,
-      {method: 'POST', body}
-    )
+      `${ETLENEUM}/~/contract/${contractId}${field ? `/${field}` : ""}`,
+      { method: "POST", body }
+    );
     if (!r.ok) {
-      throw new Error((await r.json()).error)
+      throw new Error((await r.json()).error);
     }
-    return (await r.json()).value
+    return (await r.json()).value;
   }
 
   return {
     get,
     state: (jqfilter = null) =>
-      jqfilter ? post('state', jqfilter) : get('state'),
-    funds: () => get('funds'),
-    calls: (qs = null) =>
-      qs ? get(`calls?{(new URLSearchParams(qs)).toString()}`) : get('calls'),
+      jqfilter ? post("state", jqfilter) : get("state"),
+    funds: () => get("funds"),
 
     stream(onCall = () => {}, onError = () => {}) {
-      const es = new EventSource(`${ETLENEUM}/~~~/contract/${contractId}`)
+      const es = new EventSource(`${ETLENEUM}/~~~/contract/${contractId}`);
 
       if (onCall)
-        es.addEventListener('call-made', e => {
-          let data = JSON.parse(e.data)
-          onCall(data.id)
-        })
+        es.addEventListener("call-made", (e) => {
+          let data = JSON.parse(e.data);
+          onCall(data.id);
+        });
 
       if (onError)
-        es.addEventListener('call-error', e => {
-          let data = JSON.parse(e.data)
-          if (data.kind === 'internal') {
-            onError(data.id, `internal error, please notify: ${data.message}`)
-          } else if (data.kind === 'runtime') {
-            onError(data.id, `runtime error: <pre>${data.message}</pre>`)
+        es.addEventListener("call-error", (e) => {
+          let data = JSON.parse(e.data);
+          if (data.kind === "internal") {
+            onError(data.id, `internal error, please notify: ${data.message}`);
+          } else if (data.kind === "runtime") {
+            onError(data.id, `runtime error: <pre>${data.message}</pre>`);
           }
-        })
+        });
 
       return () => {
-        es.close()
-      }
+        es.close();
+      };
     },
 
-    async prepareCall(method, msatoshi = 0, payload = {}, session = '') {
+    async prepareCall(method, msatoshi = 0, payload = {}, session = "") {
       let r = await fetch(
         `${ETLENEUM}/~/contract/${contractId}/call?session=${session}`,
         {
-          method: 'POST',
+          method: "POST",
           body: JSON.stringify({
             msatoshi,
             method,
-            payload
-          })
+            payload,
+          }),
         }
-      )
+      );
 
       if (!r.ok) {
-        throw new Error((await r.json()).error)
+        throw new Error((await r.json()).error);
       }
 
-      return (await r.json()).value
-    }
-  }
-}
+      return (await r.json()).value;
+    },
 
-export async function loadCall(callid) {
-  let r = await fetch(`${ETLENEUM}/~/call/${callid}`)
+    async loadCall(callid) {
+      let r = await fetch(
+        `${ETLENEUM}/~/contract/${contractId}/call/${callid}`
+      );
+      if (!r.ok) {
+        throw new Error((await r.json()).error);
+      }
+      return (await r.json()).value;
+    },
 
-  if (!r.ok) {
-    throw new Error((await r.json()).error)
-  }
-
-  return (await r.json()).value
-}
-
-export async function patchCall(callid, payload) {
-  let r = await fetch(`${ETLENEUM}/~/call/${callid}`, {
-    method: 'PATCH',
-    body: JSON.stringify(payload)
-  })
-
-  if (!r.ok) {
-    throw new Error((await r.json()).error)
-  }
-
-  return (await r.json()).value
+    async patchCall(callid, payload) {
+      let r = await fetch(
+        `${ETLENEUM}/~/contract/${contractId}/call/${callid}`,
+        {
+          method: "PATCH",
+          body: JSON.stringify(payload),
+        }
+      );
+      if (!r.ok) {
+        throw new Error((await r.json()).error);
+      }
+      return (await r.json()).value;
+    },
+  };
 }
